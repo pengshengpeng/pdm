@@ -1,0 +1,15 @@
+server:
+  port: 8580
+
+spring:
+  # 数据源配置
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://192.168.57.102:3306/pdm?useUnicode=true&characterEncoding=utf-8
+    username: root
+    password: root
+# 日志
+logging:
+  level:
+    # 设置包的日志输出级别(开发建议使用debug)
+    pdm.bdpj: debug

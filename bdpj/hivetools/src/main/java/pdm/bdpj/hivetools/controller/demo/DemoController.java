@@ -1,0 +1,42 @@
+package pdm.bdpj.hivetools.controller.demo;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import pdm.bdpj.common.constant.NHttpStatusEnum;
+import pdm.bdpj.common.response.ResponseVO;
+import pdm.bdpj.hivetools.model.bo.DemoBo;
+import pdm.bdpj.hivetools.service.DemoService;
+
+import java.util.ArrayList;
+
+@RestController
+@RequestMapping("/api/demo")
+public class DemoController extends ResponseVO {
+    @Autowired
+    private DemoService demoService;
+
+    @GetMapping("/test1")
+    public ResponseVO find() {
+        ArrayList<String> list = demoService.find();
+        return ResponseVO.ok(list);
+    }
+
+    @GetMapping("/test2")
+    public ResponseVO test2() {
+        ResponseVO result = new ResponseVO<>();
+        return ResponseVO.error(NHttpStatusEnum.AUTH_ERROR);
+    }
+
+    @GetMapping("/test3")
+    public ResponseVO test3() {
+        ResponseVO result = new ResponseVO<>();
+        DemoBo user = new DemoBo();
+        user.setUserName("psp");
+        user.setAge(18);
+        int i = demoService.save(user);
+        return ResponseVO.ok(i);
+    }
+
+}
