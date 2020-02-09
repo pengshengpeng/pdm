@@ -2,6 +2,7 @@ package pdm.bdpj.hivetools.common;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -34,26 +35,19 @@ public class ExcelAnalysis {
      * @return 二维集合（第一重集合为行，第二重集合为列，每一行包含该行的列集合，列集合包含该行的全部单元格的值）
      */
     public static List<String> analysis(MultipartFile file) throws Exception {
-        //获取文件名称
         if (file == null) {
             throw new ServiceException(NHttpStatusEnum.EXCEL_FILE_NOT_EXIST);
         }
+
+        //获取文件名称
         String fileName = file.getOriginalFilename();
         log.info(String.format("开始解析Excel [%s] 文件名：[%s] 文件大小：[%d]", NDateUtil.getTime(), fileName, file.getSize()));
 
         List<String> tableCreateSqls = new ArrayList<>();
         try (
-                //获取输入流
-                InputStream in = file.getInputStream()
+                InputStream in = file.getInputStream();
+                Workbook workbook = judegExcelEdition(fileName) ? new XSSFWorkbook(in) : new HSSFWorkbook(in)
         ) {
-            //判断excel版本
-            Workbook workbook = null;
-            if (judegExcelEdition(fileName)) {
-                workbook = new XSSFWorkbook(in);
-            } else {
-                workbook = new HSSFWorkbook(in);
-            }
-
             //获取data_type_mapping工作表
             Sheet mappingSheet = workbook.getSheet(MAPPING_SHRRT);
             if (mappingSheet == null) {
@@ -105,7 +99,21 @@ public class ExcelAnalysis {
      * @return 字段类型映射信息
      */
     private static List<DataTypeMappingBo> getDataTypeMappingBos(Sheet mappingSheet) {
-        return new ArrayList<>();
+        List<DataTypeMappingBo> dataTypeMappingBos = new ArrayList<>();
+        DataTypeMappingBo dataTypeMappingBo;
+        //循环获取工作表的每一行
+        for (int i = 1; i < mappingSheet.getPhysicalNumberOfRows(); i++) {
+            Row sheetRow = mappingSheet.getRow(i);
+
+            dataTypeMappingBo = new DataTypeMappingBo();
+            dataTypeMappingBo.setSrcDbType(sheetRow.getCell(0).getStringCellValue());
+            dataTypeMappingBo.setSrcTypeCd(sheetRow.getCell(1).getStringCellValue());
+            dataTypeMappingBo.setTgtDbType(sheetRow.getCell(2).getStringCellValue());
+            dataTypeMappingBo.setTgtTypeCd(sheetRow.getCell(3).getStringCellValue());
+
+            dataTypeMappingBos.add(dataTypeMappingBo);
+        }
+        return dataTypeMappingBos;
     }
 
     /**
@@ -115,7 +123,27 @@ public class ExcelAnalysis {
      * @return 表的基本信息
      */
     private static List<TableBaseInfoBo> getTableBaseInfoBos(Sheet tablesSheet) {
-        return new ArrayList<>();
+        List<TableBaseInfoBo> tableBaseInfoBos = new ArrayList<>();
+        TableBaseInfoBo tableBaseInfoBo;
+        //循环获取工作表的每一行
+        for (int i = 1; i < tablesSheet.getPhysicalNumberOfRows(); i++) {
+            Row sheetRow = tablesSheet.getRow(i);
+
+            tableBaseInfoBo = new TableBaseInfoBo();
+            tableBaseInfoBo.setSrcDbType(sheetRow.getCell(0).getStringCellValue());
+            tableBaseInfoBo.setTgtDbType(sheetRow.getCell(1).getStringCellValue());
+            tableBaseInfoBo.setTableSpace(sheetRow.getCell(2).getStringCellValue());
+            tableBaseInfoBo.setTableName(sheetRow.getCell(3).getStringCellValue());
+            tableBaseInfoBo.setTableComment(sheetRow.getCell(4).getStringCellValue());
+            tableBaseInfoBo.setFileFormat(sheetRow.getCell(5).getStringCellValue());
+            tableBaseInfoBo.setRowFormat(sheetRow.getCell(6).getStringCellValue());
+            tableBaseInfoBo.setLocation(sheetRow.getCell(7).getStringCellValue());
+            tableBaseInfoBo.setTgtLocation(sheetRow.getCell(8).getStringCellValue());
+            tableBaseInfoBo.setZipFile(sheetRow.getCell(9).getStringCellValue());
+
+            tableBaseInfoBos.add(tableBaseInfoBo);
+        }
+        return tableBaseInfoBos;
     }
 
     /**
@@ -127,6 +155,7 @@ public class ExcelAnalysis {
      * @return 建表语句
      */
     private static String getTableCreateSql(TableBaseInfoBo tableBaseInfoBo, Sheet sheetFields, List<DataTypeMappingBo> dataTypeMappingBos) {
+
         return " ";
     }
 }

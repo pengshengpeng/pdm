@@ -1,4 +1,11 @@
 package pdm.bdpj.hivetools.model.bo;
 
-public class TableFieldInfoBo {
+import lombok.Data;
+
+import java.io.Serializable;
+
+@Data
+public class TableFieldInfoBo implements Serializable {
+
+    private static final long serialVersionUID = -1;
 }
