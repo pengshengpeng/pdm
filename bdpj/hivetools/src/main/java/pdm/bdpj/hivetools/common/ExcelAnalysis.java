@@ -185,7 +185,7 @@ public class ExcelAnalysis {
                 tableBaseInfoBo.getFields(), tableBaseInfoBo.getFileFormat(), tableBaseInfoBo.getLocation(), tableBaseInfoBo.getTableComment());
 
         //sql语句
-        sb.append(String.format("ceate external table if not exists %s.%s_%s(%s)%s;", tableBaseInfoBo.getTableSpace(), tableBaseInfoBo.getTableName(), NDateUtil.getDays(), fields, info));
+        sb.append(String.format("create external table if not exists %s.%s_%s(%s)%s;", tableBaseInfoBo.getTableSpace(), tableBaseInfoBo.getTableName(), NDateUtil.getDays(), fields, info));
         return sb.toString();
     }
 
