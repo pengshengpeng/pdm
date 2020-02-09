@@ -8,4 +8,16 @@ import java.io.Serializable;
 public class TableFieldInfoBo implements Serializable {
 
     private static final long serialVersionUID = -1;
+
+    private String tableSpace;
+
+    private String tableName;
+
+    private String tableComment;
+
+    private String fieldName;
+
+    private String fieldComment;
+
+    private String fieldType;
 }

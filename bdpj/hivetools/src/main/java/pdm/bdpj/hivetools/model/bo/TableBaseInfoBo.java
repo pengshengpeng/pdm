@@ -21,7 +21,7 @@ public class TableBaseInfoBo implements Serializable {
 
     private String fileFormat;
 
-    private String rowFormat;
+    private String fields;
 
     private String location;
 
