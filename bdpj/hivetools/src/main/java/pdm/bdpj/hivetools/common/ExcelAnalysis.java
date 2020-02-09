@@ -199,17 +199,28 @@ public class ExcelAnalysis {
      */
     private static List<TableFieldInfoBo> mappingTableFieldsType(TableBaseInfoBo tableBaseInfoBo, List<TableFieldInfoBo> tableFieldInfoBos, List<DataTypeMappingBo> dataTypeMappingBos) {
         for (TableFieldInfoBo tableFieldInfoBo : tableFieldInfoBos) {
+            boolean flag = false;
+
+            String fieldType = tableFieldInfoBo.getFieldType();
+            int i = fieldType.indexOf('(');
+            if (i != -1) {
+                fieldType = fieldType.substring(0, i);
+            }
             for (DataTypeMappingBo dataTypeMappingBo : dataTypeMappingBos) {
                 //源数据库类型与目标数据库类型一致
                 if (tableBaseInfoBo.getSrcDbType().equals(dataTypeMappingBo.getSrcDbType()) && tableBaseInfoBo.getTgtDbType().equals(dataTypeMappingBo.getTgtDbType())) {
                     //字段类型与源数据库字段类型一致，替换成目标数据库
-                    if (tableFieldInfoBo.getFieldType().equals(dataTypeMappingBo.getSrcTypeCd())) {
+                    if (fieldType.equals(dataTypeMappingBo.getSrcTypeCd())) {
                         tableFieldInfoBo.setFieldType(dataTypeMappingBo.getTgtTypeCd());
+                        flag = true;
                         break;
                     }
                 }
             }
-            //throw new ServiceException(NHttpStatusEnum.EXCEL_TABLE_FIELD_NOT_MATCH, String.format("库名：%s 表名：%s 字段名：%s", tableBaseInfoBo.getTableSpace(), tableBaseInfoBo.getTableName(), tableFieldInfoBo.getFieldName()));
+            if (!flag) {
+                throw new ServiceException(NHttpStatusEnum.EXCEL_TABLE_FIELD_NOT_MATCH, String.format("库名：%s 表名：%s 字段名：%s 源数据库类型：%s 目标数据库类型：%s 源数据库字段类型：%s",
+                        tableBaseInfoBo.getTableSpace(), tableBaseInfoBo.getTableName(), tableFieldInfoBo.getFieldName(), tableBaseInfoBo.getSrcDbType(), tableBaseInfoBo.getTgtDbType(), tableFieldInfoBo.getFieldType()));
+            }
         }
         return tableFieldInfoBos;
     }
@@ -231,4 +242,5 @@ public class ExcelAnalysis {
         }
         return sb.toString();
     }
+
 }
