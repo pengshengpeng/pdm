@@ -7,7 +7,8 @@ import org.springframework.web.bind.annotation.RestController;
 import pdm.bdpj.common.constant.NHttpStatusEnum;
 import pdm.bdpj.common.response.ResponseVO;
 import pdm.bdpj.hivetools.model.bo.DemoBo;
-import pdm.bdpj.hivetools.service.DemoService;
+import pdm.bdpj.hivetools.service.demo.DemoService;
+import pdm.bdpj.hivetools.service.excel.DataAnalysisService;
 
 import java.util.ArrayList;
 
@@ -17,9 +18,13 @@ public class DemoController extends ResponseVO {
     @Autowired
     private DemoService demoService;
 
+    @Autowired
+    private DataAnalysisService dataAnalysisService;
+
     @GetMapping("/test1")
     public ResponseVO find() {
         ArrayList<String> list = demoService.find();
+        dataAnalysisService.createTable(list);
         return ResponseVO.ok(list);
     }
 

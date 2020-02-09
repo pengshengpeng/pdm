@@ -1,4 +1,4 @@
-package pdm.bdpj.hivetools.service;
+package pdm.bdpj.hivetools.service.demo;
 
 import pdm.bdpj.hivetools.model.bo.DemoBo;
 

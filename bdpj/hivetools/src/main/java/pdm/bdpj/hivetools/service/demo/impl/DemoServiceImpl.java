@@ -1,10 +1,10 @@
-package pdm.bdpj.hivetools.service.impl;
+package pdm.bdpj.hivetools.service.demo.impl;
 
 import org.springframework.stereotype.Service;
 import pdm.bdpj.common.constant.NHttpStatusEnum;
 import pdm.bdpj.common.exception.ServiceException;
 import pdm.bdpj.hivetools.model.bo.DemoBo;
-import pdm.bdpj.hivetools.service.DemoService;
+import pdm.bdpj.hivetools.service.demo.DemoService;
 
 import java.util.ArrayList;
 import java.util.Collections;
