@@ -25,4 +25,10 @@ public class ServiceException extends RuntimeException {
         this.errorCode = nHttpStatusEnum.getCode();
         this.errorMsg = nHttpStatusEnum.getMessage();
     }
+
+    public ServiceException(NHttpStatusEnum nHttpStatusEnum, String msg) {
+        super(nHttpStatusEnum.getMessage());
+        this.errorCode = nHttpStatusEnum.getCode();
+        this.errorMsg = nHttpStatusEnum.getMessage() + msg;
+    }
 }
