@@ -98,14 +98,34 @@ public class ExcelAnalysis {
         return !fileName.matches("^.+\\.(?i)(xls)$");
     }
 
+    /**
+     * 解析字段类型映射关系
+     *
+     * @param mappingSheet 映射工作簿
+     * @return 字段类型映射信息
+     */
     private static List<DataTypeMappingBo> getDataTypeMappingBos(Sheet mappingSheet) {
         return new ArrayList<>();
     }
 
+    /**
+     * 解析表的基本信息
+     *
+     * @param tablesSheet 表信息工作簿
+     * @return 表的基本信息
+     */
     private static List<TableBaseInfoBo> getTableBaseInfoBos(Sheet tablesSheet) {
         return new ArrayList<>();
     }
 
+    /**
+     * 拼接建表语句
+     *
+     * @param tableBaseInfoBo    表信息
+     * @param sheetFields        字段信息
+     * @param dataTypeMappingBos 映射关系
+     * @return 建表语句
+     */
     private static String getTableCreateSql(TableBaseInfoBo tableBaseInfoBo, Sheet sheetFields, List<DataTypeMappingBo> dataTypeMappingBos) {
         return " ";
     }
