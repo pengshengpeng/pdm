@@ -7,7 +7,7 @@ import java.io.Serializable;
 @Data
 public class TableBaseInfoBo implements Serializable {
 
-    private static final long serialVersionUID = -3573538646491669106L;
+    private static final long serialVersionUID = -1;
 
     private String srcDbType;
 
@@ -24,4 +24,8 @@ public class TableBaseInfoBo implements Serializable {
     private String rowFormat;
 
     private String location;
+
+    private String tgtLocation;
+
+    private String zipFile;
 }
