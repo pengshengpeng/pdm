@@ -20,7 +20,12 @@ public enum NHttpStatusEnum {
     EXCEL_SHEET_NOT_EXIST(500, "100002", "Excel表字段信息数据为空"),
     EXCEL_FILE_NOT_EXIST(500, "100003", "Excel文件不存在"),
 
-    SQL_DATA_EMPTY(501, "200001", "sql数据为空");
+    SQL_DATA_EMPTY(500, "200001", "sql数据为空"),
+
+    INSERT_OPERATION_FAIL(500, "300001", "新增操作失败"),
+    UPDATE_OPERATION_FAIL(500, "300002", "更新操作失败"),
+    DELETE_OPERATION_FAIL(500, "300003", "删除操作失败"),;
+    ;
 
     private final int status;
     private final String code;

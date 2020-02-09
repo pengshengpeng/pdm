@@ -8,5 +8,5 @@ public interface DemoService {
 
     ArrayList<String> find();
 
-    int save(DemoBo user);
+    int save(DemoBo user) throws Exception;
 }

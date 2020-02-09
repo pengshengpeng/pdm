@@ -35,11 +35,16 @@ public class DemoController extends ResponseVO {
     }
 
     @GetMapping("/test3")
-    public ResponseVO test3() {
+    public ResponseVO test3() throws Exception {
         ResponseVO result = new ResponseVO<>();
         DemoBo user = new DemoBo();
-        user.setUserName("psp");
+        user.setName("psp");
         user.setAge(18);
+        user.setId(1);
+        user.setSex("男");
+        user.setAddress("浦东新区");
+        user.setMath(100);
+        user.setEnglish(100);
         int i = demoService.save(user);
         return ResponseVO.ok(i);
     }

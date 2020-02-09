@@ -1,13 +1,18 @@
 server:
   port: 8580
 
-#spring:
-#  # 数据源配置
-#  datasource:
-#    driver-class-name: com.mysql.jdbc.Driver
-#    url: jdbc:mysql://192.168.57.102:3306/pdm?useUnicode=true&characterEncoding=utf-8
-#    username: root
-#    password: root
+spring:
+  # 数据源配置
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/pdm?useUnicode=true&characterEncoding=utf-8
+    username: root
+    password: root
+
+mybatis:
+ config-location: classpath:mybatis/mybatis-config.xml
+ mapper-locations: classpath:mybatis/mapper/*.xml
+
 # 日志
 logging:
   level:
