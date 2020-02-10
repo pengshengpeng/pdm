@@ -32,10 +32,10 @@ public class ShellUtil {
                 FileWriter fw = new FileWriter(sh);
                 BufferedWriter bf = new BufferedWriter(fw);
         ) {
-            String[] hiveCommond = {"date=$1", "echo ${date}", "hive --hiveconf yyyymmdd='${date}' -f create_" + tableName + "_${date}.sql"};
-            for (int i = 0; i < hiveCommond.length; i++) {
-                bf.write(hiveCommond[i]);
-                if (i < hiveCommond.length - 1) {
+            String[] hiveCommand = {"date=$1", "echo ${date}", "hive --hiveconf yyyymmdd='${date}' -f create_" + tableName + "_${date}.sql"};
+            for (int i = 0; i < hiveCommand.length; i++) {
+                bf.write(hiveCommand[i]);
+                if (i < hiveCommand.length - 1) {
                     bf.newLine();
                 }
             }
@@ -65,10 +65,10 @@ public class ShellUtil {
                 FileWriter fw = new FileWriter(sh);
                 BufferedWriter bf = new BufferedWriter(fw);
         ) {
-            String[] hiveCommond = {"originPath=$1", "targetPath=$2", "echo ${originPath}", "echo ${targetPath}", "hdfs dfs -put ${originPath} ${targetPath}"};
-            for (int i = 0; i < hiveCommond.length; i++) {
-                bf.write(hiveCommond[i]);
-                if (i < hiveCommond.length - 1) {
+            String[] hiveCommand = {"originPath=$1", "targetPath=$2", "echo ${originPath}", "echo ${targetPath}", "hdfs dfs -put ${originPath} ${targetPath}"};
+            for (int i = 0; i < hiveCommand.length; i++) {
+                bf.write(hiveCommand[i]);
+                if (i < hiveCommand.length - 1) {
                     bf.newLine();
                 }
             }
