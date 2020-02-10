@@ -16,4 +16,20 @@ public class DataTypeMappingBo implements Serializable {
     private String tgtDbType;
 
     private String tgtTypeCd;
+
+    public void setSrcDbType(String srcDbType) {
+        this.srcDbType = srcDbType.trim();
+    }
+
+    public void setSrcTypeCd(String srcTypeCd) {
+        this.srcTypeCd = srcTypeCd.trim();
+    }
+
+    public void setTgtDbType(String tgtDbType) {
+        this.tgtDbType = tgtDbType.trim();
+    }
+
+    public void setTgtTypeCd(String tgtTypeCd) {
+        this.tgtTypeCd = tgtTypeCd.trim();
+    }
 }

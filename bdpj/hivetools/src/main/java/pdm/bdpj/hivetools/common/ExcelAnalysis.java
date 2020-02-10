@@ -12,6 +12,7 @@ import pdm.bdpj.common.exception.ServiceException;
 import pdm.bdpj.common.utils.NDateUtil;
 import pdm.bdpj.hivetools.model.bo.DataTypeMappingBo;
 import pdm.bdpj.hivetools.model.bo.TableBaseInfoBo;
+import pdm.bdpj.hivetools.model.bo.TableFieldInfoBo;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -29,10 +30,10 @@ public class ExcelAnalysis {
     }
 
     /**
-     * 获取并解析excel文件，返回一个二维集合
+     * 获取并解析excel文件，返回表创建SQL字符串
      *
-     * @param file 上传的文件
-     * @return 二维集合（第一重集合为行，第二重集合为列，每一行包含该行的列集合，列集合包含该行的全部单元格的值）
+     * @param file 上传的Excel
+     * @return 多表创建SQL字符串
      */
     public static List<String> analysis(MultipartFile file) throws Exception {
         if (file == null) {
@@ -136,7 +137,7 @@ public class ExcelAnalysis {
             tableBaseInfoBo.setTableName(sheetRow.getCell(3).getStringCellValue());
             tableBaseInfoBo.setTableComment(sheetRow.getCell(4).getStringCellValue());
             tableBaseInfoBo.setFileFormat(sheetRow.getCell(5).getStringCellValue());
-            tableBaseInfoBo.setRowFormat(sheetRow.getCell(6).getStringCellValue());
+            tableBaseInfoBo.setFields(sheetRow.getCell(6).getStringCellValue());
             tableBaseInfoBo.setLocation(sheetRow.getCell(7).getStringCellValue());
             tableBaseInfoBo.setTgtLocation(sheetRow.getCell(8).getStringCellValue());
             tableBaseInfoBo.setZipFile(sheetRow.getCell(9).getStringCellValue());
@@ -155,7 +156,91 @@ public class ExcelAnalysis {
      * @return 建表语句
      */
     private static String getTableCreateSql(TableBaseInfoBo tableBaseInfoBo, Sheet sheetFields, List<DataTypeMappingBo> dataTypeMappingBos) {
+        StringBuilder sb = new StringBuilder();
 
-        return " ";
+        sb.append(String.format("use %s;", tableBaseInfoBo.getTableSpace()));
+
+        sb.append(String.format("drop table if exitsts %s.%s_%s;", tableBaseInfoBo.getTableSpace(), tableBaseInfoBo.getTableName(), NDateUtil.getDays()));
+
+        //拼接表字段
+        List<TableFieldInfoBo> tableFieldInfoBos = new ArrayList<>();
+        TableFieldInfoBo tableFieldInfoBo;
+        for (int i = 1; i < sheetFields.getPhysicalNumberOfRows(); i++) {
+            Row sheetRow = sheetFields.getRow(i);
+
+            tableFieldInfoBo = new TableFieldInfoBo();
+            tableFieldInfoBo.setTableSpace(sheetRow.getCell(0).getStringCellValue());
+            tableFieldInfoBo.setTableName(sheetRow.getCell(1).getStringCellValue());
+            tableFieldInfoBo.setTableComment(sheetRow.getCell(2).getStringCellValue());
+            tableFieldInfoBo.setFieldName(sheetRow.getCell(3).getStringCellValue());
+            tableFieldInfoBo.setFieldComment(sheetRow.getCell(4).getStringCellValue());
+            tableFieldInfoBo.setFieldType(sheetRow.getCell(5).getStringCellValue());
+
+            tableFieldInfoBos.add(tableFieldInfoBo);
+        }
+        String fields = getTableFieldsSql(mappingTableFieldsType(tableBaseInfoBo, tableFieldInfoBos, dataTypeMappingBos));
+
+        //拼接表信息
+        String info = String.format("row format delimited fields by '%s' file_format %s LOCATION '%s' COMMENT '%s'",
+                tableBaseInfoBo.getFields(), tableBaseInfoBo.getFileFormat(), tableBaseInfoBo.getLocation(), tableBaseInfoBo.getTableComment());
+
+        //sql语句
+        sb.append(String.format("create external table if not exists %s.%s_%s(%s)%s;", tableBaseInfoBo.getTableSpace(), tableBaseInfoBo.getTableName(), NDateUtil.getDays(), fields, info));
+        return sb.toString();
     }
+
+    /**
+     * 根据映射关系替换源表字段类型
+     *
+     * @param tableBaseInfoBo    表基本信息
+     * @param tableFieldInfoBos  源表字段信息
+     * @param dataTypeMappingBos 字段类型映射关系
+     * @return 替换后的字段信息
+     */
+    private static List<TableFieldInfoBo> mappingTableFieldsType(TableBaseInfoBo tableBaseInfoBo, List<TableFieldInfoBo> tableFieldInfoBos, List<DataTypeMappingBo> dataTypeMappingBos) {
+        for (TableFieldInfoBo tableFieldInfoBo : tableFieldInfoBos) {
+            boolean flag = false;
+
+            String fieldType = tableFieldInfoBo.getFieldType();
+            int i = fieldType.indexOf('(');
+            if (i != -1) {
+                fieldType = fieldType.substring(0, i);
+            }
+            for (DataTypeMappingBo dataTypeMappingBo : dataTypeMappingBos) {
+                //源数据库类型与目标数据库类型一致
+                if (tableBaseInfoBo.getSrcDbType().equals(dataTypeMappingBo.getSrcDbType()) && tableBaseInfoBo.getTgtDbType().equals(dataTypeMappingBo.getTgtDbType())) {
+                    //字段类型与源数据库字段类型一致，替换成目标数据库
+                    if (fieldType.equals(dataTypeMappingBo.getSrcTypeCd())) {
+                        tableFieldInfoBo.setFieldType(dataTypeMappingBo.getTgtTypeCd());
+                        flag = true;
+                        break;
+                    }
+                }
+            }
+            if (!flag) {
+                throw new ServiceException(NHttpStatusEnum.EXCEL_TABLE_FIELD_NOT_MATCH, String.format("库名：%s 表名：%s 字段名：%s 源数据库类型：%s 目标数据库类型：%s 源数据库字段类型：%s",
+                        tableBaseInfoBo.getTableSpace(), tableBaseInfoBo.getTableName(), tableFieldInfoBo.getFieldName(), tableBaseInfoBo.getSrcDbType(), tableBaseInfoBo.getTgtDbType(), tableFieldInfoBo.getFieldType()));
+            }
+        }
+        return tableFieldInfoBos;
+    }
+
+    /**
+     * 获取表字段sql
+     *
+     * @param tableFieldInfoBos 表字段信息
+     * @return 表字段sql
+     */
+    private static String getTableFieldsSql(List<TableFieldInfoBo> tableFieldInfoBos) {
+        StringBuilder sb = new StringBuilder();
+        for (TableFieldInfoBo tableFieldInfoBo : tableFieldInfoBos) {
+            if (sb.length() == 0) {
+                sb.append(String.format("%s %s COMMENT '%s'", tableFieldInfoBo.getFieldName(), tableFieldInfoBo.getFieldType(), tableFieldInfoBo.getFieldComment()));
+            } else {
+                sb.append(String.format(" ,%s %s COMMENT '%s'", tableFieldInfoBo.getFieldName(), tableFieldInfoBo.getFieldType(), tableFieldInfoBo.getFieldComment()));
+            }
+        }
+        return sb.toString();
+    }
+
 }
