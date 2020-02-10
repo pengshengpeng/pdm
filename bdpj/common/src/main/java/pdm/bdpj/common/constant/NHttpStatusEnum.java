@@ -20,6 +20,7 @@ public enum NHttpStatusEnum {
     EXCEL_SHEET_NOT_EXIST(500, "100002", "Excel表字段信息数据为空！"),
     EXCEL_FILE_NOT_EXIST(500, "100003", "Excel文件不存在！"),
     EXCEL_TABLE_FIELD_NOT_MATCH(500, "100004", "表字段类型在映射关系中未匹配！"),
+    FILE_CREATE_FAIL(500, "100005", "文件创建失败！"),
 
     /**
      * 数据库类型错误
