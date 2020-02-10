@@ -140,7 +140,7 @@ public class ExcelAnalysis {
     private static void write(File file, String encoding, String... contents) throws Exception {
         try (
                 FileOutputStream fos = new FileOutputStream(file);
-                OutputStreamWriter osw = new OutputStreamWriter(fos, "utf-8")
+                OutputStreamWriter osw = new OutputStreamWriter(fos, encoding)
         ) {
             for (String content : contents) {
                 osw.write(content);
