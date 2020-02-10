@@ -1,0 +1,1 @@
+select count(1) from PDM.O_LDM_DSR_${hiveconf:yyyymmdd};

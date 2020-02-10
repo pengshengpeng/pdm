@@ -25,7 +25,12 @@ public enum NHttpStatusEnum {
     /**
      * 数据库类型错误
      */
-    SQL_DATA_EMPTY(501, "200001", "sql数据为空！");
+    SQL_DATA_EMPTY(501, "200001", "sql数据为空！"),
+
+    INSERT_OPERATION_FAIL(502, "300001", "新增操作失败"),
+    UPDATE_OPERATION_FAIL(502, "300002", "更新操作失败"),
+    DELETE_OPERATION_FAIL(502, "300003", "删除操作失败"),;
+    ;
 
     private final int status;
     private final String code;
