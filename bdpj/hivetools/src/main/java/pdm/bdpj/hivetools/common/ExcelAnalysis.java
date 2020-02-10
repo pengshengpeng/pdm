@@ -160,7 +160,7 @@ public class ExcelAnalysis {
 
         sb.append(String.format("use %s;", tableBaseInfoBo.getTableSpace()));
 
-        sb.append(String.format("drop table if exitsts %s.%s_%s;", tableBaseInfoBo.getTableSpace(), tableBaseInfoBo.getTableName(), NDateUtil.getDays()));
+        sb.append(String.format("drop table if exists %s.%s_%s;", tableBaseInfoBo.getTableSpace(), tableBaseInfoBo.getTableName(), NDateUtil.getDays()));
 
         //拼接表字段
         List<TableFieldInfoBo> tableFieldInfoBos = new ArrayList<>();
