@@ -89,23 +89,33 @@ public class ExcelAnalysis {
                 if (sheetFields == null) {
                     throw new ServiceException(NHttpStatusEnum.EXCEL_SHEET_NOT_EXIST, tableBaseInfoBo.getTableName());
                 }
+                //选择表空间
+                String userTableSpace = String.format("use %s;", tableBaseInfoBo.getTableSpace());
+
+                //删除历史表
+                String dropTable = String.format("drop table if exists %s.%s_%s;", tableBaseInfoBo.getTableSpace(), tableBaseInfoBo.getTableName(), HIVE_CONF);
+
                 //创建表语句 sql
                 String tableCreateSql = getTableCreateSql(tableBaseInfoBo, sheetFields, dataTypeMappingBos);
                 log.info(String.format("表名: [%s].[%s] ----建表语句：[%s]", tableBaseInfoBo.getTableSpace(), tableBaseInfoBo.getTableName(), tableCreateSql));
                 File tableCreateSqlFile = new File(dir.getPath(), String.format("create_%s_%s.sql", tableBaseInfoBo.getTableName(), NDateUtil.getDays()));
-                write(tableCreateSqlFile, ENCODING, tableCreateSql);
+                write(tableCreateSqlFile, ENCODING, userTableSpace, dropTable, tableCreateSql);
 
                 //执行创建语句 sh
-                String tableCreate = String.format("hive --hiveconf yyyymmdd=’’ -f %s", tableCreateSqlFile.getName());
-                log.info(String.format("表名: [%s].[%s] ----执行建表语句：[%s]", tableBaseInfoBo.getTableSpace(), tableBaseInfoBo.getTableName(), tableCreate));
+                String createDate = "create_date=$1";
+                String showCreateDate = "echo ${create_date}";
+                String tableCreate = String.format("hive --hiveconf yyyymmdd=${create_date} -f create_%s_${create_date}.sql", tableBaseInfoBo.getTableName());
+                log.info(String.format("表名: [%s].[%s] ----执行建表语句：[%s]", tableBaseInfoBo.getTableSpace(), tableBaseInfoBo.getTableName(), createDate + showCreateDate + tableCreate));
                 File tableCreateFile = new File(dir.getPath(), String.format("exec_%s_%s.sh", tableBaseInfoBo.getTableName(), NDateUtil.getDays()));
-                write(tableCreateFile, ENCODING, tableCreate);
+                write(tableCreateFile, ENCODING, createDate, showCreateDate, tableCreate);
 
                 //执行加载语句 sh
-                String tableLoadData = String.format("hive -e 'load data local inpath '%s' overwrite into table %s.%s_%s'", tableBaseInfoBo.getLocation(), tableBaseInfoBo.getTableSpace(), tableBaseInfoBo.getTableName(), HIVE_CONF);
-                log.info(String.format("表名: [%s].[%s] ----执行加载语句：[%s]", tableBaseInfoBo.getTableSpace(), tableBaseInfoBo.getTableName(), tableLoadData));
+                String loadDate = "load_date=$1";
+                String showLoadDate = "echo ${load_date}";
+                String tableLoadData = String.format("hive -e 'load data local inpath '%s' overwrite into table %s.%s_${load_date}'", tableBaseInfoBo.getLocation(), tableBaseInfoBo.getTableSpace(), tableBaseInfoBo.getTableName());
+                log.info(String.format("表名: [%s].[%s] ----执行加载语句：[%s]", tableBaseInfoBo.getTableSpace(), tableBaseInfoBo.getTableName(), loadDate + showLoadDate + tableLoadData));
                 File tableLoadDataFile = new File(dir.getPath(), String.format("put_%s_%s.sh", tableBaseInfoBo.getTableName(), NDateUtil.getDays()));
-                write(tableLoadDataFile, ENCODING, tableLoadData);
+                write(tableLoadDataFile, ENCODING, loadDate, showLoadDate, tableLoadData);
 
                 //校验语句 sql
                 String tableLoadCheckSql = String.format("select count(1) from %s.%s_%s;", tableBaseInfoBo.getTableSpace(), tableBaseInfoBo.getTableName(), HIVE_CONF);
@@ -124,15 +134,18 @@ public class ExcelAnalysis {
      *
      * @param file     文件
      * @param encoding 编码
-     * @param content  内容
+     * @param contents 内容
      * @throws Exception
      */
-    private static void write(File file, String encoding, String content) throws Exception {
+    private static void write(File file, String encoding, String... contents) throws Exception {
         try (
                 FileOutputStream fos = new FileOutputStream(file);
-                OutputStreamWriter osw = new OutputStreamWriter(fos, "utf-8")
+                OutputStreamWriter osw = new OutputStreamWriter(fos, encoding)
         ) {
-            osw.write(content);
+            for (String content : contents) {
+                osw.write(content);
+                osw.write("\r\n");
+            }
             osw.flush();
         }
     }
@@ -212,10 +225,6 @@ public class ExcelAnalysis {
     private static String getTableCreateSql(TableBaseInfoBo tableBaseInfoBo, Sheet sheetFields, List<DataTypeMappingBo> dataTypeMappingBos) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(String.format("use %s;", tableBaseInfoBo.getTableSpace()));
-
-        sb.append(String.format("drop table if exists %s.%s_%s;", tableBaseInfoBo.getTableSpace(), tableBaseInfoBo.getTableName(), HIVE_CONF));
-
         //拼接表字段
         List<TableFieldInfoBo> tableFieldInfoBos = new ArrayList<>();
         TableFieldInfoBo tableFieldInfoBo;
@@ -237,11 +246,11 @@ public class ExcelAnalysis {
         //拼接表信息
         String location;
         if (tableBaseInfoBo.getTgtLocation().endsWith("/")) {
-            location = tableBaseInfoBo.getTgtLocation() + NDateUtil.getDays() + "/" + tableBaseInfoBo.getTableName();
+            location = tableBaseInfoBo.getTgtLocation() + HIVE_CONF + "/" + tableBaseInfoBo.getTableName();
         } else {
-            location = tableBaseInfoBo.getTgtLocation() + "/" + NDateUtil.getDays() + "/" + tableBaseInfoBo.getTableName();
+            location = tableBaseInfoBo.getTgtLocation() + "/" + HIVE_CONF + "/" + tableBaseInfoBo.getTableName();
         }
-        String info = String.format("COMMENT '%s' row format delimited fields by '%s' stored as %s location '%s'",
+        String info = String.format("COMMENT '%s' row format delimited fields terminated by '%s' stored as %s location '%s'",
                 tableBaseInfoBo.getTableComment(), tableBaseInfoBo.getFields(), tableBaseInfoBo.getFileFormat(), location);
 
         //sql语句
